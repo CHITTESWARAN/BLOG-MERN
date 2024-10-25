@@ -3,27 +3,8 @@ import { Navigate } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
+import Editor from '../Editor';
 
-const modules = {
-  toolbar: [
-    [{ 'header': '1' }, { 'header': '2' }, { 'font': [] }],
-    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-    ['bold', 'italic', 'underline', 'strike'],
-    ['link', 'image'],
-    [{ 'align': [] }],
-    ['blockquote', 'code-block'],
-    ['clean'] // Button to clear formatting
-  ]
-};
-
-const formats = [
-  'header', 'font', 'size',
-  'bold', 'italic', 'underline', 'strike',
-  'list', 'bullet', 'indent',
-  'link', 'image', 'align',
-  'blockquote', 'code-block',
-  'clean'
-];
 
 const Createpost = () => {
   const [title, setTitle] = useState('');
@@ -62,7 +43,7 @@ const Createpost = () => {
 
   return (
     <>
-      <form className="flex flex-col gap-6 w-[90%] max-w-3xl border border-gray-300 p-6 font-serif m-auto mt-8" onSubmit={createNewPost}>
+      <form className="flex flex-col gap-6 w-[90%] max-w-3xl  border border-gray-300 p-6 font-serif m-auto mt-24" onSubmit={createNewPost}>
         <input
           type="text"
           value={title}
@@ -85,14 +66,7 @@ const Createpost = () => {
           className="p-3 w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
         />
 
-        <ReactQuill
-          placeholder="Write your post here..."
-          value={content}
-          modules={modules}
-          formats={formats}
-          onChange={(newValue) => setContent(newValue)}
-          className="min-h-80 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:border-blue-500"
-        />
+      <Editor value={content} onChange={setContent}/>
 
         <button className="p-4 w-[28%] m-auto bg-blue-600 border border-black-800 text-white font-xl rounded-xl">
           Create post

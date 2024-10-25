@@ -11,25 +11,26 @@ const Post = ({_id, title, summary, content, cover, createdAt,author }) => {
   const coverImage = convertToRelativePath(cover);
 
   return (
-    <div className='p-2 m-5 w-full h-auto border border-r-4'>
-      <div className='grid my-5 grid-cols-[1fr] gap-5 screen:lg grid-cols-[0.9fr,1.1fr]'>
-        <div>
+    <div className="p-2 m-5 w-[90%]  max-h-72 border border-r-4 transition-transform duration-300 ease-in-out hover:scale-105 hover:bg-gray-300">
+      <div className='grid my-5 grid-cols-3 gap-5'>
+       
+        <div >
           <Link to={`/post/${_id}`}>
           <img
             src={`http://localhost:4000${coverImage}`}
             alt="Image not found"
-            className='w-full h-auto'
+            className='min-w-1/2 m-auto h-[220px] object-cover '
           />
           </Link>
         </div>
 
-        <div>
+        <div  className='grid col-span-2'>
           <Link to={`/post/${_id}`}>
           <h2 className='font-bold m-0 text-3xl'>
             {title}
           </h2>
           </Link>
-          <p className="info mx-0 my-2.5 text-[#888] font-bold text-2xl">
+          <p className="info mx-0 my-2.5 text-[#888] font-bold text-sm">
             <a href="#" className='author text-[#333]'>{author.username}</a>
             <time> {formatISO9075(new Date(createdAt))}</time>
           </p>

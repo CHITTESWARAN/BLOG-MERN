@@ -15,11 +15,17 @@ const Indexpage = () => {
         console.error('Error fetching posts:', error);
       });
   }, []);
+  
+
+  if(!posts)
+  {
+   return(<h2>Loading...</h2>)
+  }
 
   return (
-    <div>
+    <div className='mt-32'>
       {
-        posts ? (
+        posts.length!=0 ? (
           posts.map((post, index) => (
   
             <Post key={index} {...post} /> 

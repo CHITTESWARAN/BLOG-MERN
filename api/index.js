@@ -9,6 +9,7 @@ const cookieParser = require("cookie-parser");
 const multer = require('multer');
 const fs = require('fs');
 const path = require("path");
+
 const Post = require("./Models/post");
 
 // CORS middleware for allowing front-end communication
@@ -63,6 +64,7 @@ app.post("/register", async (req, res) => {
         res.status(500).send("Error registering user");
     }
 });
+
 
 // Login Route
 app.post("/login", async (req, res) => {
@@ -152,6 +154,62 @@ app.post("/post", uploadMiddleware.single("file"), async (req, res) => {
     });
 });
 
+app.put('/post/:id', uploadMiddleware.single("file"), async (req, res) => {
+    let newPath = null;
+    const { id } = req.params;
+
+    if (req.file) {
+        const { originalname, path: tempPath } = req.file;
+        const parts = originalname.split(".");
+        const ext = parts[parts.length - 1];
+        newPath = path.join(__dirname, 'uploads', `${req.file.filename}.${ext}`); // Set new path for the file with extension
+
+        try {
+            // Rename the file
+            await fs.promises.rename(tempPath, newPath); // Use promises for better error handling
+        } catch (err) {
+            console.error("Error renaming file:", err);
+            return res.status(500).json("File processing error");
+        }
+    }
+
+    const { token } = req.cookies;
+
+    // Verify the user by using the token in the cookies
+    jwt.verify(token, secret, async (err, user) => {
+        if (err) {
+            return res.status(401).json('Invalid token');
+        }
+
+        const { title, summary, content } = req.body; // Do not extract id from body; it's in params
+        const postDoc = await Post.findById(id);
+
+        if (!postDoc) {
+            return res.status(404).json("Post not found");
+        }
+
+        const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(user.id);
+        if (!isAuthor) {
+            return res.status(403).json("You are not the author");
+        }
+
+        try {
+            // Update the post with the new values, including the cover if a new file was uploaded
+            postDoc.title = title;
+            postDoc.summary = summary;
+            postDoc.content = content;
+            postDoc.cover = newPath ? newPath : postDoc.cover; // Update cover only if newPath is defined
+
+            await postDoc.save(); // Save the updated post
+
+            res.json(postDoc);
+        } catch (error) {
+            console.error("Error updating post:", error.message);
+            res.status(500).json("Error updating post");
+        }
+    });
+});
+
 // Get all posts
 app.get('/post', async (req, res) => {
     try {
@@ -203,6 +261,45 @@ app.get("/post/:id", async (req, res) => {
       }
     });
   });
+
+
+  //Delelte the a post
+  app.delete("/post/:id",(req,res)=>{
+    const {id}= req.params;
+    const {token} = req.cookies
+    jwt.verify(token, secret, async (err, user) => {
+        if (err) {
+          return res.status(401).json('Invalid token'); 
+        }
+    
+        try {
+          
+          const userDoc = await User.findById(user.id);
+    
+          if (!userDoc) {
+            return res.status(404).json('User not found');
+          }
+           
+           console.log(userDoc);
+          const postDoc = await Post.findById(id);
+
+           if(user.id===postDoc.author.toString())
+           {
+            const deletepost= await Post.findByIdAndDelete(id);
+           
+    
+          if (!deletepost) {
+            return res.status(404).json('Post not found'); // Send 404 if post not found
+          }
+          res.json({ message: 'Post deleted successfully',  });
+          
+        }
+        } catch (error) {
+          
+          res.status(500).json({ error: 'Internal server error' });
+        }
+      });
+    });
   
 // Start the server
 app.listen(4000, () => {
